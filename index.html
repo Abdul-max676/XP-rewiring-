@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XP Habit Rewiring</title>
+    <style>
+        /* Reset & Base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        
+        body {
+            background: #0a0a0a;
+            color: #f0f0f0;
+            min-height: 100vh;
+            padding: 15px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        /* Responsive Container */
+        .container {
+            width: 100%;
+            padding-right: 15px;
+            padding-left: 15px;
+            margin-right: auto;
+            margin-left: auto;
+        }
+        
+        /* Responsive Grid */
+        .app {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        
+        @media (min-width: 768px) {
+            .app {
+                grid-template-columns: 2fr 1fr;
+            }
+            
+            .container {
+                max-width: 720px;
+            }
+        }
+        
+        @media (min-width: 992px) {
+            .container {
+                max-width: 960px;
+            }
+        }
+        
+        @media (min-width: 1200px) {
+            .container {
+                max-width: 1140px;
+            }
+        }
+        
+        /* Mobile First Adjustments */
+        @media (max-width: 767px) {
+            body {
+                padding: 10px;
+            }
+            
+            .card {
+                padding: 15px;
+            }
+            
+            .header {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+                padding-bottom: 15px;
+            }
+            
+            .xp-display {
+                font-size: 1.8em;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 8px;
+            }
+            
+            .stat-box {
+                padding: 12px 8px;
+            }
+            
+            .stat-value {
+                font-size: 1.3em;
+            }
+            
+            .task-item {
+                padding: 12px;
+            }
+            
+            button {
+                padding: 8px 15px;
+                font-size: 14px;
+            }
+            
+            .modal-content {
+                padding: 20px;
+                width: 95%;
+                margin: 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr !important;
+            }
+            
+            .task-item {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start !important;
+            }
+            
+            .task-item button {
+                width: 100%;
+            }
+            
+            .header h1 {
+                font-size: 1.5em;
+            }
+            
+            .xp-display {
+                font-size: 1.5em;
+            }
+        }
+        
+        /* Touch-friendly for mobile */
+        @media (hover: none) and (pointer: coarse) {
+            button, 
+            input[type="checkbox"],
+            .task-item {
+                min-height: 44px; /* Apple's recommended touch target size */
+            }
+            
+            input, select {
+                font-size: 16px; /* Prevents iOS zoom on focus */
+                min-height: 44px;
+            }
+        }
+        
+        /* Components */
+        .card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .xp-badge {
+            background: linear-gradient(135deg, #00d4aa, #0099ff);
+            color: black;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9em;
+            display: inline-block;
+            white-space: nowrap;
+        }
+        
+        .streak-badge {
+            background: #ff9900;
+            color: black;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9em;
+            display: inline-block;
+        }
+        
+        button {
+            background: #333;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+            -webkit-tap-highlight-color: transparent; /* Remove mobile tap highlight */
+        }
+        
+        button:hover {
+            background: #444;
+        }
+        
+        button.primary {
+            background: #0099ff;
+        }
+        
+        button.primary:hover {
+            background: #0088ee;
+        }
+        
+        button.success {
+            background: #00aa55;
+        }
+        
+        button.success:hover {
+            background: #009944;
+        }
+        
+        button.danger {
+            background: #ff3333;
+        }
+        
+        button.danger:hover {
+            background: #ee2222;
+        }
+        
+        input, select {
+            background: #222;
+            color: white;
+            border: 1px solid #444;
+            padding: 10px;
+            border-radius: 6px;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        
+        /* Progress Bar */
+        .progress-container {
+            background: #333;
+            height: 12px;
+            border-radius: 6px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, #00d4aa, #0099ff);
+            height: 100%;
+            border-radius: 6px;
+            transition: width 0.3s;
+        }
+        
+        /* Task Items */
+        .task-item {
+            background: #222;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border-left: 4px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .task-item-content {
+            flex: 1;
+            min-width: 200px; /* Ensure content doesn't get too squished */
+        }
+        
+        @media (max-width: 767px) {
+            .task-item-content {
+                min-width: 150px;
+                margin-bottom: 10px;
+            }
+        }
+        
+        .task-item.completed {
+            border-left-color: #00aa55;
+            opacity: 0.7;
+        }
+        
+        .task-item.boss {
+            border-left-color: #ff9900;
+            background: #2a1a00;
+        }
+        
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 15px;
+        }
+        
+        .modal-content {
+            background: #1a1a1a;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #1a1a1a;
+            border-left: 4px solid #0099ff;
+            padding: 15px;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+            max-width: calc(100vw - 40px);
+            word-break: break-word;
+        }
+        
+        @media (max-width: 767px) {
+            .notification {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                max-width: none;
+            }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @media (max-width: 767px) {
+            @keyframes slideIn {
+                from { transform: translateY(-100%); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
+            }
+        }
+        
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #333;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .header-left, .header-right {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        @media (max-width: 767px) {
+            .header-left, .header-right {
+                min-width: auto;
+                width: 100%;
+            }
+            
+            .header-right {
+                text-align: center;
+            }
+        }
+        
+        .xp-display {
+            font-size: 2em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #00d4aa, #0099ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+        
+        /* Dashboard Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-box {
+            background: #222;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #0099ff;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            color: #888;
+            margin-top: 5px;
+        }
+        
+        /* Focus Mode */
+        .focus-mode {
+            background: #002200;
+            border: 2px solid #00aa55;
+        }
+        
+        .focus-checklist {
+            margin: 15px 0;
+        }
+        
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .checklist-item input {
+            width: auto;
+            margin-right: 10px;
+            margin-bottom: 0;
+            transform: scale(1.2); /* Larger on mobile */
+        }
+        
+        /* Mobile menu/actions */
+        .mobile-actions {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #1a1a1a;
+            border-top: 1px solid #333;
+            padding: 10px;
+            z-index: 100;
+        }
+        
+        @media (max-width: 767px) {
+            .mobile-actions {
+                display: flex;
+                justify-content: space-around;
+            }
+            
+            .mobile-actions button {
+                flex: 1;
+                margin: 0 5px;
+                padding: 12px;
+            }
+            
+            /* Add padding to body to account for fixed mobile actions */
+            body {
+                padding-bottom: 70px;
+            }
+        }
+        
+        /* Prevent horizontal scroll */
+        html, body {
+            overflow-x: hidden;
+        }
+        
+        /* Smooth scrolling */
+        @media (prefers-reduced-motion: no-preference) {
+            html {
+                scroll-behavior: smooth;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h2>XP Habit Rewiring</h2>
+            <p style="margin: 15px 0; color: #888;">Effort → Reward. No shortcuts.</p>
+            <input type="email" id="loginEmail" placeholder="Email" value="user@example.com">
+            <input type="password" id="loginPassword" placeholder="Password" value="password">
+            <button onclick="login()" class="primary" style="width: 100%; padding: 12px;">Start Earning XP</button>
+            <p style="margin-top: 15px; color: #888; font-size: 0.9em; text-align: center;">
+                Works offline • Data saved locally
+            </p>
+        </div>
+    </div>
+
+    <!-- Daily Check-in Modal -->
+    <div id="checkinModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h2>Daily Check-In</h2>
+            <p style="margin: 10px 0; color: #888;">Required to unlock rewards tomorrow</p>
+            
+            <div class="card" style="margin: 15px 0;">
+                <p>XP earned today: <span id="todayXP">0</span></p>
+                <p>Current streak: <span id="currentStreak">0</span> days</p>
+            </div>
+            
+            <label>What tasks did you avoid today?</label>
+            <input type="text" id="tasksAvoided" placeholder="Be honest...">
+            
+            <label>One task to earn XP tomorrow:</label>
+            <input type="text" id="taskForTomorrow" placeholder="Make it specific">
+            
+            <div style="display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap;">
+                <button onclick="skipCheckin()" class="danger" style="flex: 1; min-width: 120px;">Skip (no rewards tomorrow)</button>
+                <button onclick="submitCheckin()" class="success" style="flex: 1; min-width: 120px;">Complete Check-In</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="app" style="display: none;">
+        <div class="container">
+            <div class="header">
+                <div class="header-left">
+                    <h1 style="font-size: clamp(1.5em, 4vw, 2em);">XP Habit Rewiring</h1>
+                    <p style="color: #888; margin-top: 5px; font-size: clamp(0.9em, 2vw, 1em);">
+                        Effort → Reward. Daily consistency.
+                    </p>
+                </div>
+                <div class="header-right">
+                    <div class="xp-display"><span id="totalXP">0</span> XP</div>
+                    <div style="text-align: right; margin-top: 5px;">
+                        Level <span id="currentLevel">1</span>
+                        <div id="nextLevelInfo" style="color: #888; font-size: 0.9em;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="app">
+                <!-- Main Content -->
+                <div>
+                    <!-- Dashboard Stats -->
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-value" id="dailyXP">0</div>
+                            <div class="stat-label">XP Today</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value" id="activeStreak">0</div>
+                            <div class="stat-label">Day Streak</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value" id="tasksCompleted">0</div>
+                            <div class="stat-label">Tasks Today</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value" id="missedXP">0</div>
+                            <div class="stat-label">Missed XP</div>
+                        </div>
+                    </div>
+
+                    <!-- Level Progress -->
+                    <div class="card">
+                        <h3 style="margin-bottom: 10px; font-size: clamp(1.1em, 3vw, 1.3em);">Level Progress</h3>
+                        <div class="progress-container">
+                            <div id="levelProgressBar" class="progress-bar" style="width: 0%"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 5px; font-size: clamp(0.85em, 2vw, 0.95em);">
+                            <span>Level <span id="levelFrom">1</span></span>
+                            <span id="progressText">0/100 XP</span>
+                            <span>Level <span id="levelTo">2</span></span>
+                        </div>
+                    </div>
+
+                    <!-- Daily Quests -->
+                    <div class="card">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap;">
+                            <h3 style="font-size: clamp(1.1em, 3vw, 1.3em); margin-bottom: 5px;">Daily Quests</h3>
+                            <div class="xp-badge" id="dailyXPCounter" style="margin-bottom: 5px;">0/100 XP</div>
+                        </div>
+                        <div id="dailyTasks"></div>
+                    </div>
+
+                    <!-- Boss Fights -->
+                    <div class="card">
+                        <h3 style="margin-bottom: 15px; font-size: clamp(1.1em, 3vw, 1.3em);">⚔️ Boss Fights (Optional)</h3>
+                        <p style="color: #888; margin-bottom: 15px; font-size: 0.9em;">
+                            High-resistance tasks. Max 1 per day.
+                        </p>
+                        <div id="bossFights"></div>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <div>
+                    <!-- Rewards -->
+                    <div class="card">
+                        <h3 style="margin-bottom: 15px; font-size: clamp(1.1em, 3vw, 1.3em);">Rewards</h3>
+                        <p style="color: #888; margin-bottom: 15px; font-size: 0.9em;">
+                            Unlocked by XP. No XP = No rewards.
+                        </p>
+                        <div id="rewardsList"></div>
+                        <div id="nextReward" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #333;"></div>
+                    </div>
+
+                    <!-- Focus Mode -->
+                    <div class="card focus-mode">
+                        <h3 style="margin-bottom: 10px; font-size: clamp(1.1em, 3vw, 1.3em);">Focus Mode</h3>
+                        <div class="focus-checklist">
+                            <div class="checklist-item">
+                                <input type="checkbox" id="focus1">
+                                <label for="focus1">Close distracting tabs</label>
+                            </div>
+                            <div class="checklist-item">
+                                <input type="checkbox" id="focus2">
+                                <label for="focus2">Phone on silent</label>
+                            </div>
+                            <div class="checklist-item">
+                                <input type="checkbox" id="focus3">
+                                <label for="focus3">Clear workspace</label>
+                            </div>
+                        </div>
+                        <button onclick="toggleFocusMode()" id="focusBtn" style="width: 100%; padding: 12px;" class="success">
+                            Enable Focus Mode
+                        </button>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="card">
+                        <h3 style="margin-bottom: 15px; font-size: clamp(1.1em, 3vw, 1.3em);">Stats</h3>
+                        <div id="statsList"></div>
+                        <button onclick="resetDay()" style="width: 100%; margin-top: 15px; padding: 12px;" class="danger">
+                            Reset Today's Progress
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Actions -->
+        <div class="mobile-actions">
+            <button onclick="showCheckinModal()" class="primary">Check-In</button>
+            <button onclick="toggleFocusMode()" class="success" id="mobileFocusBtn">Focus</button>
+            <button onclick="resetDay()" class="danger">Reset Day</button>
+        </div>
+    </div>
+
+    <script>
+        // ============ MOBILE UTILITIES ============
+        function isMobile() {
+            return window.innerWidth <= 767;
+        }
+        
+        function updateMobileUI() {
+            const mobileFocusBtn = document.getElementById('mobileFocusBtn');
+            if (mobileFocusBtn && state) {
+                mobileFocusBtn.textContent = state.focusMode ? 'Unfocus' : 'Focus';
+            }
+        }
+        
+        // Listen for resize
+        window.addEventListener('resize', updateMobileUI);
+        
+        // Prevent zoom on double-tap (iOS)
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(event) {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+        
+        // ============ DATA STRUCTURE ============
+        const DEFAULT_TASKS = [
+            { id: 1, name: "25 min focused work", xp: 20, frequency: "daily", completed: false },
+            { id: 2, name: "Read 1 article + write takeaway", xp: 10, frequency: "daily", completed: false },
+            { id: 3, name: "Write 1 original post or thoughtful reply", xp: 15, frequency: "daily", completed: false },
+            { id: 4, name: "Learn 1 concept & explain it", xp: 25, frequency: "daily", completed: false }
+        ];
+
+        const BOSS_FIGHTS = [
+            { id: 10, name: "Start a task avoided for 7+ days", xp: 50, completed: false },
+            { id: 11, name: "Post even when feeling 'not ready'", xp: 40, completed: false },
+            { id: 12, name: "Sit with discomfort for 10 minutes", xp: 30, completed: false }
+        ];
+
+        const REWARDS = [
+            { xp: 50, description: "🎵 Light reward (music, short walk)", claimed: false },
+            { xp: 100, description: "📺 Episode / relaxed browsing", claimed: false },
+            { xp: 300, description: "🎮 Guilt-free leisure block", claimed: false }
+        ];
+
+        const LEVELS = [
+            { level: 1, xp: 0, permissions: ["Basic rewards"] },
+            { level: 2, xp: 100, permissions: ["Extended breaks"] },
+            { level: 3, xp: 300, permissions: ["Learning XP bonus"] },
+            { level: 4, xp: 700, permissions: ["Creative XP bonus"] },
+            { level: 5, xp: 1500, permissions: ["Unlock advanced tasks"] }
+        ];
+
+        // ============ STATE ============
+        let state = {
+            user: null,
+            totalXP: 0,
+            dailyXP: 0,
+            level: 1,
+            streak: 0,
+            lastCheckin: null,
+            tasks: [...DEFAULT_TASKS],
+            bossFights: [...BOSS_FIGHTS],
+            rewards: [...REWARDS],
+            completedToday: [],
+            bossCompletedToday: false,
+            focusMode: false,
+            today: new Date().toDateString()
+        };
+
+        // ============ INITIALIZATION ============
+        function init() {
+            loadState();
+            
+            // Show login if no user
+            if (!state.user) {
+                document.getElementById('loginScreen').style.display = 'flex';
+            } else {
+                showApp();
+                checkDailyReset();
+                checkNotifications();
+            }
+            
+            requestNotificationPermission();
+            
+            // Initialize mobile UI
+            updateMobileUI();
+        }
+
+        function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            if (email && password) {
+                state.user = { email };
+                saveState();
+                document.getElementById('loginScreen').style.display = 'none';
+                showApp();
+                checkDailyReset();
+                
+                // Show first check-in
+                if (!state.lastCheckin || new Date(state.lastCheckin).toDateString() !== state.today) {
+                    setTimeout(() => showCheckinModal(), 1000);
+                }
+            }
+        }
+
+        function showApp() {
+            document.getElementById('app').style.display = 'block';
+            renderDashboard();
+            updateMobileUI();
+        }
+
+        // ============ XP LOGIC ============
+        function completeTask(taskId, isBoss = false) {
+            let task;
+            if (isBoss) {
+                if (state.bossCompletedToday) {
+                    showNotification("⚠️ Max 1 boss fight per day");
+                    return;
+                }
+                task = state.bossFights.find(t => t.id === taskId);
+                state.bossCompletedToday = true;
+            } else {
+                task = state.tasks.find(t => t.id === taskId);
+                
+                // Check daily XP cap (100 XP for regular tasks)
+                if (state.dailyXP >= 100) {
+                    showNotification("⚠️ Daily XP cap reached (100 XP)");
+                    return;
+                }
+                
+                // Check if task already completed today
+                if (state.completedToday.includes(taskId)) {
+                    showNotification("⚠️ Task already completed today");
+                    return;
+                }
+            }
+            
+            if (task) {
+                task.completed = true;
+                state.completedToday.push(taskId);
+                
+                // Add XP
+                if (!isBoss) {
+                    state.dailyXP += task.xp;
+                    state.dailyXP = Math.min(state.dailyXP, 100); // Enforce cap
+                }
+                state.totalXP += task.xp;
+                
+                // Update streak (simplified)
+                if (!isBoss) {
+                    state.streak++;
+                }
+                
+                saveState();
+                renderDashboard();
+                checkLevelUp();
+                checkRewards();
+                
+                showNotification(`✅ +${task.xp} XP earned!`);
+                
+                // Request browser notification
+                if (Notification.permission === 'granted') {
+                    new Notification('XP Earned!', {
+                        body: `+${task.xp} XP for "${task.name}"`,
+                        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="%2300d4aa"/></svg>'
+                    });
+                }
+            }
+        }
+
+        function checkLevelUp() {
+            const newLevel = calculateLevel(state.totalXP);
+            if (newLevel > state.level) {
+                state.level = newLevel;
+                showNotification(`🎉 Level Up! Now Level ${newLevel}`);
+                saveState();
+            }
+        }
+
+        function calculateLevel(xp) {
+            for (let i = LEVELS.length - 1; i >= 0; i--) {
+                if (xp >= LEVELS[i].xp) {
+                    return LEVELS[i].level;
+                }
+            }
+            return 1;
+        }
+
+        function checkRewards() {
+            state.rewards.forEach(reward => {
+                if (state.totalXP >= reward.xp && !reward.claimed) {
+                    reward.claimed = true;
+                    showNotification(`🎁 Reward unlocked: ${reward.description}`);
+                }
+            });
+        }
+
+        // ============ DAILY CHECK-IN ============
+        function showCheckinModal() {
+            document.getElementById('todayXP').textContent = state.dailyXP;
+            document.getElementById('currentStreak').textContent = state.streak;
+            document.getElementById('checkinModal').style.display = 'flex';
+        }
+
+        function submitCheckin() {
+            const avoided = document.getElementById('tasksAvoided').value;
+            const tomorrow = document.getElementById('taskForTomorrow').value;
+            
+            state.lastCheckin = new Date().toISOString();
+            saveState();
+            
+            document.getElementById('checkinModal').style.display = 'none';
+            showNotification("✅ Daily check-in complete");
+            
+            // Reset inputs
+            document.getElementById('tasksAvoided').value = '';
+            document.getElementById('taskForTomorrow').value = '';
+        }
+
+        function skipCheckin() {
+            document.getElementById('checkinModal').style.display = 'none';
+            showNotification("⚠️ Rewards locked tomorrow");
+        }
+
+        // ============ DASHBOARD RENDERING ============
+        function renderDashboard() {
+            // Update main XP display
+            document.getElementById('totalXP').textContent = state.totalXP;
+            document.getElementById('dailyXP').textContent = state.dailyXP;
+            document.getElementById('currentLevel').textContent = state.level;
+            document.getElementById('activeStreak').textContent = state.streak;
+            document.getElementById('tasksCompleted').textContent = state.completedToday.length;
+            
+            // Calculate missed XP (simplified)
+            const missed = state.tasks.filter(t => !t.completed).reduce((sum, t) => sum + t.xp, 0);
+            document.getElementById('missedXP').textContent = missed;
+            
+            // Daily XP counter
+            document.getElementById('dailyXPCounter').textContent = `${state.dailyXP}/100 XP`;
+            
+            // Level progress
+            const currentLevel = LEVELS.find(l => l.level === state.level);
+            const nextLevel = LEVELS.find(l => l.level === state.level + 1);
+            
+            if (nextLevel) {
+                const xpInLevel = state.totalXP - currentLevel.xp;
+                const xpNeeded = nextLevel.xp - currentLevel.xp;
+                const progress = (xpInLevel / xpNeeded) * 100;
+                
+                document.getElementById('levelProgressBar').style.width = `${progress}%`;
+                document.getElementById('levelFrom').textContent = state.level;
+                document.getElementById('levelTo').textContent = state.level + 1;
+                document.getElementById('progressText').textContent = `${xpInLevel}/${xpNeeded} XP`;
+                document.getElementById('nextLevelInfo').textContent = `${nextLevel.xp - state.totalXP} XP to level ${state.level + 1}`;
+            }
+            
+            // Render tasks
+            renderTasks();
+            renderBossFights();
+            renderRewards();
+            renderStats();
+            updateMobileUI();
+        }
+
+        function renderTasks() {
+            const container = document.getElementById('dailyTasks');
+            container.innerHTML = '';
+            
+            state.tasks.forEach(task => {
+                const completed = state.completedToday.includes(task.id);
+                const div = document.createElement('div');
+                div.className = `task-item ${completed ? 'completed' : ''}`;
+                
+                const buttonHtml = !completed ? 
+                    `<button onclick="completeTask(${task.id})" class="primary" style="min-width: 100px;">Complete</button>` : 
+                    '<span style="color: #00aa55;">✓ Completed</span>';
+                
+                div.innerHTML = `
+                    <div class="task-item-content">
+                        <div style="font-weight: 600; margin-bottom: 5px;">${task.name}</div>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <span class="xp-badge">+${task.xp} XP</span>
+                        </div>
+                    </div>
+                    ${buttonHtml}
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function renderBossFights() {
+            const container = document.getElementById('bossFights');
+            container.innerHTML = '';
+            
+            state.bossFights.forEach(boss => {
+                const div = document.createElement('div');
+                div.className = 'task-item boss';
+                
+                const canFight = !boss.completed && !state.bossCompletedToday;
+                const buttonHtml = canFight ? 
+                    `<button onclick="completeTask(${boss.id}, true)" class="success" style="min-width: 100px;">Fight Boss</button>` : 
+                    '<span style="color: #888;">Completed today</span>';
+                
+                div.innerHTML = `
+                    <div class="task-item-content">
+                        <div style="font-weight: 600; margin-bottom: 5px;">⚔️ ${boss.name}</div>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <span class="xp-badge">+${boss.xp} XP</span>
+                            <span style="color: #ff9900; font-size: 0.9em;">High resistance</span>
+                        </div>
+                    </div>
+                    ${buttonHtml}
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function renderRewards() {
+            const container = document.getElementById('rewardsList');
+            container.innerHTML = '';
+            
+            state.rewards.forEach(reward => {
+                const unlocked = state.totalXP >= reward.xp;
+                const div = document.createElement('div');
+                div.style.marginBottom = '10px';
+                div.style.padding = '12px';
+                div.style.background = unlocked ? '#002200' : '#222';
+                div.style.borderRadius = '6px';
+                div.style.borderLeft = `4px solid ${unlocked ? '#00aa55' : '#333'}`;
+                div.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 5px;">
+                        <div style="flex: 1; min-width: 200px;">
+                            <div style="font-size: 0.95em;">${reward.description}</div>
+                            <div style="font-size: 0.85em; color: #888; margin-top: 5px;">
+                                ${reward.xp} XP required
+                            </div>
+                        </div>
+                        <div style="font-size: 0.9em;">
+                            ${reward.claimed ? 
+                              '<span style="color: #00aa55;">✓ Claimed</span>' : 
+                              (unlocked ? '<span style="color: #00d4aa;">Available</span>' : '<span style="color: #888;">Locked</span>')}
+                        </div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+            
+            // Next reward preview
+            const nextReward = state.rewards.find(r => !r.claimed && state.totalXP < r.xp);
+            if (nextReward) {
+                const needed = nextReward.xp - state.totalXP;
+                document.getElementById('nextReward').innerHTML = `
+                    <div style="color: #888; font-size: 0.9em;">Next reward in:</div>
+                    <div style="font-weight: 600; margin-top: 5px; font-size: 1.1em;">${needed} XP</div>
+                    <div style="font-size: 0.9em; color: #00d4aa; margin-top: 5px;">${nextReward.description}</div>
+                `;
+            }
+        }
+
+        function renderStats() {
+            const container = document.getElementById('statsList');
+            const stats = [
+                { label: 'Total Tasks Completed', value: state.completedToday.length },
+                { label: 'Boss Fights Won', value: state.bossFights.filter(b => b.completed).length },
+                { label: 'Rewards Claimed', value: state.rewards.filter(r => r.claimed).length },
+                { label: 'Highest Streak', value: state.streak }
+            ];
+            
+            container.innerHTML = stats.map(stat => `
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.95em;">
+                    <span style="color: #888;">${stat.label}</span>
+                    <span style="font-weight: 600;">${stat.value}</span>
+                </div>
+            `).join('');
+        }
+
+        // ============ FOCUS MODE ============
+        function toggleFocusMode() {
+            state.focusMode = !state.focusMode;
+            const btn = document.getElementById('focusBtn');
+            const mobileBtn = document.getElementById('mobileFocusBtn');
+            const focusCard = document.querySelector('.focus-mode');
+            
+            if (state.focusMode) {
+                btn.textContent = 'Disable Focus Mode';
+                btn.className = 'danger';
+                if (mobileBtn) mobileBtn.textContent = 'Unfocus';
+                focusCard.style.background = '#003300';
+                focusCard.style.borderColor = '#00ff55';
+                showNotification('🎯 Focus mode enabled');
+                
+                if (Notification.permission === 'granted') {
+                    new Notification('Focus Mode Activated', {
+                        body: 'Time for deep work. Close distractions.',
+                        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="%2300ff55"/></svg>'
+                    });
+                }
+            } else {
+                btn.textContent = 'Enable Focus Mode';
+                btn.className = 'success';
+                if (mobileBtn) mobileBtn.textContent = 'Focus';
+                focusCard.style.background = '#002200';
+                focusCard.style.borderColor = '#00aa55';
+            }
+        }
+
+        // ============ NOTIFICATIONS ============
+        function requestNotificationPermission() {
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+        }
+
+        function checkNotifications() {
+            // Reminder if no XP earned by noon
+            const now = new Date();
+            if (now.getHours() >= 12 && state.dailyXP === 0) {
+                showNotification("⏰ No XP earned yet today. Start with a small task.");
+            }
+            
+            // Streak reminder in evening
+            if (now.getHours() >= 20 && state.dailyXP < 50) {
+                showNotification("🌙 Evening reminder: Last chance to earn XP today");
+            }
+        }
+
+        function showNotification(message) {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            // Remove after 5 seconds
+            setTimeout(() => {
+                notification.remove();
+            }, 5000);
+        }
+
+        // ============ DAILY RESET ============
+        function checkDailyReset() {
+            const lastDate = localStorage.getItem('lastAppDate');
+            const today = new Date().toDateString();
+            
+            if (lastDate !== today) {
+                resetDailyState();
+                localStorage.setItem('lastAppDate', today);
+                
+                // Show check-in if missed yesterday
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                if (state.lastCheckin && new Date(state.lastCheckin).toDateString() !== yesterday.toDateString()) {
+                    state.streak = 0; // Reset streak if missed check-in
+                }
+                
+                // Show daily check-in
+                setTimeout(() => showCheckinModal(), 1000);
+            }
+        }
+
+        function resetDailyState() {
+            state.tasks.forEach(task => task.completed = false);
+            state.bossFights.forEach(boss => boss.completed = false);
+            state.completedToday = [];
+            state.dailyXP = 0;
+            state.bossCompletedToday = false;
+            saveState();
+            renderDashboard();
+        }
+
+        function resetDay() {
+            if (confirm("Reset today's progress? This will clear all completed tasks.")) {
+                resetDailyState();
+                showNotification("🔄 Today's progress reset");
+            }
+        }
+
+        // ============ PERSISTENCE ============
+        function saveState() {
+            localStorage.setItem('xpAppState', JSON.stringify(state));
+        }
+
+        function loadState() {
+            const saved = localStorage.getItem('xpAppState');
+            if (saved) {
+                const loaded = JSON.parse(saved);
+                // Merge with defaults to ensure all properties exist
+                state = { ...state, ...loaded };
+                
+                // Ensure arrays are properly initialized
+                if (!state.completedToday) state.completedToday = [];
+                if (!state.tasks) state.tasks = [...DEFAULT_TASKS];
+                if (!state.bossFights) state.bossFights = [...BOSS_FIGHTS];
+                if (!state.rewards) state.rewards = [...REWARDS];
+                
+                // Check if today's date changed
+                const today = new Date().toDateString();
+                if (state.today !== today) {
+                    state.today = today;
+                }
+            }
+        }
+
+        // ============ RUN APP ============
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
